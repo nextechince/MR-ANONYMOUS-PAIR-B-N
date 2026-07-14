@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MR-ANONYMOUS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* -------- ALL YOUR EXISTING STYLES (unchanged) -------- */
+        :root {
+            --accent-glow: #38bdf8;
+            --success-glow: #4ade80;
+            --premium-gold: #fbbf24;
+            --border-glass: rgba(255, 255, 255, 0.05);
+            --bg-glass: rgba(13, 20, 35, 0.7);
+            --bg-inputs: rgba(8, 14, 27, 0.7);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        body {
+            color: #f1f5f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+            padding: 30px 20px;
+            background: transparent;
+        }
+
+        .video-canvas-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .video-canvas-bg video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .video-canvas-bg::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(4, 7, 13, 0.78);
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            display: none;
+            width: 100%;
+            animation: panelFade 0.3s ease forwards;
+        }
+        @keyframes panelFade {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-section { margin-bottom: 35px; text-align: center; }
+        .logo-title {
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #38bdf8, #818cf8, #4ade80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+        .logo-subtitle {
+            font-size: 11px;
+            color: #64748b;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .form-group { margin-bottom: 24px; text-align: left; width: 100%; }
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            padding-left: 2px;
+        }
+        input[type="text"], input[type="email"], input[type="password"], select {
+            width: 100%;
+            padding: 16px 18px;
+            background: var(--bg-inputs);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            color: #ffffff;
+            font-size: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+        }
+        input:focus, select:focus {
+            border-color: var(--accent-glow);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.15);
+            background: rgba(4, 8, 16, 0.9);
+        }
+
+        .sub-tier-box {
+            background: rgba(13, 20, 35, 0.6);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+        .sub-tier-box:hover { border-color: rgba(56, 189, 248, 0.3); }
+        .sub-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+        .sub-name { font-weight: 800; font-size: 18px; color: #fff; }
+        .sub-price { font-weight: 900; font-size: 20px; color: var(--success-glow); }
+        .sub-price span { font-size: 11px; color: #64748b; font-weight: 600; }
+        .paid-verify-btn {
+            width: 100%;
+            padding: 10px;
+            background: rgba(74, 222, 128, 0.08);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            border-radius: 10px;
+            color: var(--success-glow);
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .paid-verify-btn:hover {
+            background: rgba(74, 222, 128, 0.2);
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.1);
+        }
+
+        .key-activation-area {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.08);
+            text-align: center;
+        }
+        .toggle-key-view {
+            font-size: 13px;
+            color: #64748b;
+            cursor: pointer;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .toggle-key-view:hover { color: var(--accent-glow); }
+        .key-input-wrapper { display: none; margin-top: 15px; animation: panelFade 0.3s ease forwards; }
+
+        .node-input-wrapper {
+            display: flex;
+            width: 100%;
+            gap: 12px;
+        }
+        .node-input-wrapper input[type="text"] { flex: 1; min-width: 0; }
+        .add-node-btn {
+            background: rgba(56, 189, 248, 0.06);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            color: var(--accent-glow);
+            padding: 0 20px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+        .add-node-btn:hover {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: var(--accent-glow);
+        }
+
+        .matrix-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+            max-height: 120px;
+            overflow-y: auto;
+            padding: 2px;
+            width: 100%;
+        }
+        .target-capsule {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #e2e8f0;
+            animation: nodePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .target-capsule .remove-node {
+            color: #64748b;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 15px;
+        }
+        .target-capsule .remove-node:hover { color: #f87171; }
+        @keyframes nodePop {
+            from { opacity: 0; transform: scale(0.85); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.2);
+            margin-top: 15px;
+        }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(56, 189, 248, 0.3);
+        }
+        .submit-btn:disabled {
+            background: #1e293b !important;
+            box-shadow: none !important;
+            transform: none !important;
+            color: #475569;
+        }
+
+        .panel-output {
+            margin-top: 30px;
+            background: rgba(4, 8, 16, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 25px;
+            display: none;
+            width: 100%;
+            text-align: center;
+        }
+        .status-txt { font-size: 13px; color: #94a3b8; margin-bottom: 12px; }
+        .code-container {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--success-glow);
+            letter-spacing: 5px;
+            padding: 12px 24px;
+            background: rgba(74, 222, 128, 0.04);
+            border-radius: 10px;
+            display: inline-block;
+            max-width: 100%;
+            word-break: break-all;
+            text-shadow: 0 0 12px rgba(74, 222, 128, 0.3);
+            border: 1px solid rgba(74, 222, 128, 0.12);
+        }
+
+        .switch-auth-link {
+            text-align: center; font-size: 13px; color: #64748b; margin-top: 20px; cursor: pointer;
+        }
+        .switch-auth-link span { color: var(--accent-glow); font-weight: 600; }
+
+        .abort-btn {
+            background: none; border: none; color: #f87171; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase; margin-top: 25px; letter-spacing: 1px;
+        }
+
+        .footer-credits {
+            position: relative; z-index: 10; width: 100%; text-align: center; padding: 30px 0 5px 0; font-size: 11px; color: #475569; letter-spacing: 1px; font-weight: 600; text-transform: uppercase;
+        }
+        .footer-credits span { color: var(--accent-glow); }
+
+        .whatsapp-float {
+            position: fixed; bottom: 25px; right: 25px; width: 55px; height: 55px; background: #25d366; color: white; border-radius: 50%; text-align: center; font-size: 26px; box-shadow: 0 6px 20px rgba(37, 211, 102, 0.3); z-index: 100; display: flex; justify-content: center; align-items: center; text-decoration: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .whatsapp-float:hover { transform: scale(1.08) translateY(-2px); background: #22c35e; }
+
+        .audio-float {
+            position: fixed; bottom: 95px; right: 25px; width: 55px; height: 55px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-glass); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: var(--accent-glow); border-radius: 50%; text-align: center; font-size: 20px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4); z-index: 100; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .audio-float:hover {
+            transform: scale(1.08) translateY(-2px);
+            border-color: var(--accent-glow);
+            color: #ffffff;
+        }
+
+        .admin-float {
+            position: fixed; bottom: 165px; right: 25px; width: 55px; height: 55px; background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); color: white; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 50%; text-align: center; font-size: 20px; box-shadow: 0 6px 20px rgba(124, 58, 237, 0.3); z-index: 100; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .admin-float:hover {
+            transform: scale(1.08) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.5);
+        }
+
+        .admin-user-card {
+            background: rgba(2,6,16,0.4);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.03);
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-align: left;
+        }
+        .admin-user-email { font-size: 13px; font-weight: 700; color: #e2e8f0; word-break: break-all; }
+        .admin-user-uid { font-size: 10px; color: #475569; }
+        .admin-action-row { display: flex; gap: 8px; }
+        .mini-btn {
+            flex: 1; padding: 6px; font-size: 11px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; text-transform: uppercase;
+        }
+
+        .top-nav-bar {
+            position: fixed; top: 0; left: 0; width: 100%; padding: 15px 25px; display: flex; justify-content: flex-end; z-index: 100;
+        }
+        .menu-trigger { font-size: 24px; color: var(--accent-glow); cursor: pointer; transition: 0.2s; background: none; border: none; }
+        .side-menu-panel {
+            position: fixed; top: 0; right: -280px; width: 280px; height: 100%; background: rgba(8, 12, 22, 0.95); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-left: 1px solid var(--border-glass); z-index: 1000; padding: 40px 25px; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .side-menu-panel.open { right: 0; }
+        .close-menu { font-size: 22px; color: #64748b; background: none; border: none; cursor: pointer; float: right; }
+        .menu-title { font-size: 14px; font-weight: 800; color: #fff; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; clear: both; padding-top: 15px; }
+        .metric-row {
+            display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 12px; color: #94a3b8; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.02);
+        }
+        .session-scroll-box { max-height: 220px; overflow-y: auto; margin-bottom: 20px; }
+        .status-pill { font-size: 11px; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+        .status-pill.active { background: rgba(74, 222, 128, 0.1); color: var(--success-glow); }
+        .status-pill.dead { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .coming-soon-btn {
+            width: 100%; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: 10px; color: #64748b; font-weight: 700; cursor: pointer; text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+<div class="video-canvas-bg">
+    <video autoplay loop muted playsinline>
+        <source src="https://pub-10c57b52ec664624a8aafd16516b068c.r2.dev/global-bot/1780948537836-2348061972587.mp4" type="video/mp4">
+    </video>
+</div>
+<div class="top-nav-bar" id="hamburgerMenuNav" style="display: none !important;">
+    <button class="menu-trigger" onclick="toggleMenuDrawer(true)"><i class="fas fa-bars"></i></button>
+</div>
+
+<div class="side-menu-panel" id="menuDrawer">
+    <button class="close-menu" onclick="toggleMenuDrawer(false)">&times;</button>
+    <div class="menu-title">Network Analytics</div>
+    <div class="metric-row">
+        <span>Total Tracked Pairs:</span>
+        <span id="drawerTotalPairs" style="color: #fff; font-weight:700;">0</span>
+    </div>
+    <div class="menu-title" style="margin-bottom:10px;">Active Nodes</div>
+    <div class="session-scroll-box" id="drawerSessionList"></div>
+    <div class="menu-title">Options Pipeline</div>
+    <button class="coming-soon-btn" onclick="alert('Link Pair configuration feature coming soon!')">
+        <i class="fas fa-link"></i> Link Pair
+    </button>
+</div>
+
+<div class="app-container">
+
+    <div id="authPanel" class="panel" style="display: block;">
+        <div class="header-section">
+            <div class="logo-title" id="authDisplayTitle">Terminal Login</div>
+            <div class="logo-subtitle">ᴠᴇʀɪғʏ ʏᴏᴜʀ ɪᴅᴇɴᴛɪᴛʏ</div>
+        </div>
+        <form id="identityForm">
+            <div class="form-group">
+                <label>ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴ ғᴏʀᴜᴍ</label>
+                <input type="email" id="authEmail" placeholder="e.g. user@domain.com" required>
+            </div>
+            <div class="form-group">
+                <label>Security Access Code (Password)</label>
+                <input type="password" id="authPassword" placeholder="••••••••••••" required>
+            </div>
+            <button type="submit" id="authSubmitBtn" class="submit-btn">Authorize Node Access</button>
+            <div class="switch-auth-link" id="authChangeModeLink">ɴᴇᴡ sʏsᴛᴇᴍ ᴏᴘᴇʀᴀᴛᴏʀ? <span>ᴘʀᴏᴄʀᴇᴀᴛᴇ ɴᴇᴡ ᴀᴄᴄᴏᴜɴᴛ</span></div>
+        </form>
+    </div>
+
+    <div id="subPanel" class="panel">
+        <div class="header-section">
+            <div class="logo-title">ᴀᴄᴄᴇss ᴄʟᴇᴀʀᴀɴᴄᴇ</div>
+            <div class="logo-subtitle">Select node runtime data allocation plan</div>
+        </div>
+
+        <div class="sub-tier-box">
+            <div class="sub-meta" onclick="triggerDirectBilling('weekly')">
+                <div class="sub-name">ᴀʟᴘʜᴀ ᴄᴏʀᴇ ᴠᴀʀɪᴀɴᴛ</div>
+                <div class="sub-price">₦1,000 <span>/ 7 ᴅᴀʏs</span></div>
+            </div>
+            <button class="paid-verify-btn" onclick="verifyManualPayment('weekly')">ɪ ʜᴀᴠᴇ ᴘᴀɪᴅ (ᴠᴇʀɪғʏ ᴛʀᴀɴsᴀᴄᴛɪᴏɴ)</button>
+        </div>
+
+        <div class="sub-tier-box">
+            <div class="sub-meta" onclick="triggerDirectBilling('monthly')">
+                <div class="sub-name">ᴅᴇʟᴛᴀ ᴇxᴛᴇɴᴅᴇᴅ sʏsᴛᴇᴍ</div>
+                <div class="sub-price">₦5,000 <span>/ 30 ᴅᴀʏs</span></div>
+            </div>
+            <button class="paid-verify-btn" onclick="verifyManualPayment('monthly')">ɪ ʜᴀᴠᴇ ᴘᴀɪᴅ (ᴠᴇʀɪғʏ ᴛʀᴀɴsᴀᴄᴛɪᴏɴ)</button>
+        </div>
+
+        <div class="sub-tier-box">
+            <div class="sub-meta" onclick="triggerDirectBilling('permanent')">
+                <div class="sub-name">ᴏᴍᴀɢᴀ sᴏᴠᴇʀᴇɪɢɴ ɪɴғɪɴɪᴛᴇ</div>
+                <div class="sub-price">₦15,000 <span>/ ᴜɴʟɪᴍɪᴛᴇᴅ</span></div>
+            </div>
+            <button class="paid-verify-btn" onclick="verifyManualPayment('permanent')">I ʜᴀᴠᴇ ᴘᴀɪᴅ (ᴠᴇʀɪғʏ ᴛʀᴀɴsᴀᴄᴛɪᴏɴ)</button>
+        </div>
+
+        <div class="key-activation-area">
+            <div class="toggle-key-view" id="keyToggleAction">[-] ᴀᴄᴛɪᴠᴀᴛᴇ ᴀᴄᴄᴏᴜɴᴛ ᴠɪᴀ ᴛᴏᴋᴇɴ ᴋᴇʏ</div>
+            <div class="key-input-wrapper" id="keyFieldContainer">
+                <div class="node-input-wrapper">
+                    <input type="text" id="licenseKeyInput" placeholder="Paste generated admin token code...">
+                    <button type="button" class="add-node-btn" id="submitLicenseKeyBtn">ɪɴᴊᴇᴄᴛ</button>
+                </div>
+            </div>
+        </div>
+
+        <center><button class="abort-btn" onclick="killNodeSession()">ᴇxɪᴛ sᴇᴄᴜʀᴇ ɴᴏᴅᴇ</button></center>
+    </div>
+
+    <div id="adminPanel" class="panel">
+        <div class="header-section">
+            <div class="logo-title">ᴀᴅᴍɪɴ ᴄᴏɴᴛʀᴏʟʟᴇʀ</div>
+            <div class="logo-subtitle">ʀᴏᴏᴛ ᴍᴀsᴛᴇʀ ᴏᴘᴇʀᴀᴛɪᴏɴs ᴄᴏɴᴛʀᴏʟ</div>
+        </div>
+        <div class="form-group">
+            <label>ɢᴇɴᴇʀᴀᴛᴇ ᴍᴇᴍʙᴇʀsʜɪᴘ ᴀᴄᴄᴇss ᴋᴇʏ</label>
+            <select id="adminPlanSelect">
+                <option value="day">24-Hour ᴛʀɪᴀʟ ᴋᴇʏ</option>
+                <option value="weekly">ᴡᴇᴇᴋʟʏ ᴘʟᴀɴ ᴋᴇʏ</option>
+                <option value="monthly">ᴍᴏɴᴛʜʟʏ ᴘʟᴀɴ ᴋᴇʏ</option>
+                <option value="permanent">ᴘᴇʀᴍᴀɴᴇɴᴛ ᴘʟᴀɴ ᴋᴇʏ</option>
+            </select>
+            <button type="button" class="submit-btn" style="background: linear-gradient(135deg, #a855f7, #7c3aed);" onclick="adminGenerateTokenKey()">ᴍɪᴛ ʟɪᴄᴇɴsᴇ ᴋᴇʏ</button>
+        </div>
+        <div class="form-group">
+            <label>ᴘʀᴏᴍᴏᴛᴇ ɴᴇᴡ ᴏᴘᴇʀᴀᴛᴏʀ ᴀᴅᴍɪɴ</label>
+            <div class="node-input-wrapper">
+                <input type="email" id="newAdminEmailInput" placeholder="Enter user email address...">
+                <button type="button" class="add-node-btn" onclick="adminAddNewAdminEmail()">ᴀᴅᴅ ᴀᴅᴍɪɴ</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>ᴛᴏᴛᴀʟ ʀᴇɢɪsᴛᴇʀᴇᴅ ᴜsᴇʀs</label>
+            <input type="text" id="adminUserSearchBox" placeholder="Search accounts by email input..." onkeyup="filterAdminUserMatrixList()">
+            <div id="adminUsersContainer" style="margin-top:15px; max-height:240px; overflow-y:auto; padding-right:4px;"></div>
+        </div>
+        <div class="form-group" id="generatedKeyDisplayArea" style="display:none; text-align:center; margin-bottom: 20px;">
+            <label>ᴍɪɴᴛᴇᴅ ᴛᴏᴋᴇɴ ᴄᴏᴅᴇ sɪɢɴᴀᴛᴜʀᴇ:</label>
+            <div class="code-container" id="adminGeneratedKeyBox" style="font-size: 18px; color: var(--premium-gold);"></div>
+        </div>
+        <div class="form-group">
+            <label>ʀᴇsᴛɪᴄᴛ ɴᴏᴅᴇ ᴘʀᴏғɪʟᴇ (ʙᴀɴ/ᴜɴʙᴀɴ sʏsᴛᴇᴍ ᴄᴏɴᴛᴇxᴛ)</label>
+            <input type="text" id="adminTargetUidInput" placeholder="Paste target profile UID string...">
+            <div class="node-input-wrapper" style="margin-top:10px;">
+                <button type="button" class="submit-btn" style="background:#ef4444; margin:0;" onclick="adminExecuteBanAction('ban')">ᴇɴғᴏʀᴄᴇ ʙᴀɴ</button>
+                <button type="button" class="submit-btn" style="background:#10b981; margin:0;" onclick="adminExecuteBanAction('unban')">ʟɪғᴛ ʀᴇsᴛʀɪᴄᴛɪᴏɴ</button>
+            </div>
+        </div>
+        <center>
+            <button class="submit-btn" onclick="displayTargetPanel('dashboardPanel')">ʟᴜɴᴄʜ sᴛᴀɴᴅᴀʀᴅ ᴅᴀsʜʙᴏᴀʀᴅ</button>
+            <button class="abort-btn" onclick="killNodeSession()">ᴇxɪᴛ sᴇᴄᴜʀᴇ ɴᴏᴅᴇ</button>
+        </center>
+    </div>
+
+    <div id="bannedPanel" class="panel">
+        <div class="header-section">
+            <div class="logo-title" style="background: linear-gradient(to right, #ef4444, #f87171); -webkit-background-clip: text;">ᴀᴄᴇss ʀᴇᴠᴏᴋᴇᴅ</div>
+            <div class="logo-subtitle" style="color:#ef4444;">ᴘʀᴏғɪʟᴇ ᴛᴇʀᴍɪɴᴀʟ sᴀɴᴄᴛɪᴏɴ ɪᴍᴘᴏsᴇᴅ</div>
+        </div>
+        <div class="sub-tier-box" style="border-color:#ef4444; text-align:center; background: rgba(239, 68, 68, 0.05);">
+            <p style="font-size:14px; line-height: 1.6; color:#cbd5e1;">ʏᴏᴜʀ ᴀᴄᴄᴏᴜɴᴛ ᴘʀᴏғɪʟᴇ ʜᴀs ʙᴇᴇɴ ʙᴀɴ ғʀᴏɴ ᴀᴄᴇssᴇssɪɴɢ ᴛʜᴇ sᴇᴄᴜʀᴇᴅ ɴᴏᴅᴇ ᴍᴀᴛʀɪx.</p>
+            <p style="font-size:12px; margin-top:10px; color:#64748b;" id="userBannedUidDisplay"></p>
+        </div>
+        <a href="https://wa.me/2349039409985?text=My%20Account%20Is%20Banned" class="submit-btn" style="background:#25d366; text-align:center; display:block; text-decoration:none;" target="_blank">
+            <i class="fab fa-whatsapp"></i> ᴄᴏɴᴛᴀᴄᴛ sʏsᴛᴇᴍ ᴀᴅᴍɪɴ ᴠɪᴀ ᴡʜᴀᴛsᴀᴘᴘ
+        </a>
+    </div>
+
+    <div id="dashboardPanel" class="panel">
+        <div class="header-section">
+            <div class="logo-title">True ᴘᴀɪɴ 👾</div>
+            <div class="logo-subtitle">ᴀᴜᴛᴏᴍᴀᴛɪᴏɴ ᴛᴇʀᴍɪɴᴀʟ ᴘᴏʀᴛᴀʟ</div>
+        </div>
+
+        <form id="terminalForm">
+            <div class="form-group">
+                <label for="number">ᴛᴀʀɢᴇᴛ ɴᴏᴅᴇ (ᴡʜᴀᴛsᴀᴘᴘ ɴᴜᴍʙᴇʀ)</label>
+                <input type="text" id="number" placeholder="e.g. 2348030000000" required>
+            </div>
+            <div class="form-group">
+                <label for="isPremium">Privilege ᴀᴄᴄᴇss ʟᴇᴠᴇʟ</label>
+                <select id="isPremium">
+                    <option value="false">sᴛᴀɴᴅᴀʀᴅ ᴍᴏᴅᴇ ᴄᴏɴғɪɢᴜʀᴀᴛɪᴏɴ</option>
+                    <option value="true">ᴘʀᴇᴍɪᴜᴍ ᴍᴏᴅᴇ (ᴀᴜᴛᴏ ᴀᴅᴍɪɴ ᴇʟᴇᴠᴀᴛɪᴏɴ)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>ᴘᴀʏʟᴏᴀᴅ ᴍᴀᴛʀɪx ᴛᴀʀɢᴇᴛs (ғʟᴏᴏᴅ ɴᴜᴍʙᴇʀs)</label>
+                <div class="node-input-wrapper">
+                    <input type="text" id="targetInput" placeholder="e.g. 2348100000000">
+                    <button type="button" id="addNodeBtn" class="add-node-btn">ᴀᴅᴅ ɴᴏᴅᴇ</button>
+                </div>
+                <div id="matrixPool" class="matrix-pool"></div>
+            </div>
+            <button type="submit" id="actionBtn" class="submit-btn">ʀᴇǫᴜᴇsᴛ ᴄᴏɴɴᴇᴄᴛɪᴏɴ sʏɴᴄ</button>
+        </form>
+
+        <div id="panelOutput" class="panel-output">
+            <div id="statusTxt" class="status-txt">ᴀᴡᴀɪᴛɪɴɢ ʜᴀɴᴅsʜᴀᴋᴇ...</div>
+            <div id="codeContainer" class="code-container"></div>
+        </div>
+
+        <center><button class="abort-btn" onclick="killNodeSession()">ᴅᴇᴀᴜᴛᴏʀɪᴢᴇ ᴛᴇʀᴍɪɴᴀʟ</button></center>
+    </div>
+
+</div>
+
+<div class="footer-credits">
+    ᴘᴏᴡᴇʀɪɴɢ sʏsᴛᴇᴍs ᴇɴɢɪɴᴇ // ᴅᴇᴠᴇʟᴏᴘᴇᴅ ʙʏ <span>ᴍʀ ᴀɴᴏɴʏᴍᴏᴜs ᴛʜᴇ ᴜɴᴋɴᴏᴡɴ ᴅᴇᴠ¿</span>
+</div>
+
+<button type="button" id="audioToggleBtn" class="audio-float">
+    <i class="fas fa-volume-mute" id="audioIcon"></i>
+</button>
+<button type="button" id="adminQuickLinkBtn" class="admin-float" style="display: none;" onclick="displayTargetPanel('adminPanel')">
+    <i class="fas fa-user-shield"></i>
+</button>
+<a href="https://whatsapp.com/channel/your-channel-link" class="whatsapp-float" target="_blank">
+    <i class="fab fa-whatsapp"></i>
+</a>
+
+<script>
+// ================== ALL JAVASCRIPT REPLACED WITH LOCAL SERVER LOGIC ==================
+
+// -------- GLOBALS --------
+let activeUid = null;
+let activeEmail = null;
+let isUiInLoginState = true;
+let compiledTargets = [];
+
+// -------- UTILITY FUNCTIONS --------
+function displayTargetPanel(id) {
+    document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+    document.getElementById(id).style.display = 'block';
+}
+window.displayTargetPanel = displayTargetPanel;
+
+function setSession(uid, email, isAdmin) {
+    activeUid = uid;
+    activeEmail = email;
+    localStorage.setItem('cachedNodeUid', uid);
+    localStorage.setItem('firebaseUserEmail', email); // keep name for compatibility
+    if (isAdmin) {
+        document.getElementById('adminQuickLinkBtn').style.display = 'flex';
+    } else {
+        document.getElementById('adminQuickLinkBtn').style.display = 'none';
+    }
+    document.getElementById('hamburgerMenuNav').style.display = 'flex';
+}
+
+function clearSession() {
+    activeUid = null;
+    activeEmail = null;
+    localStorage.removeItem('cachedNodeUid');
+    localStorage.removeItem('firebaseUserEmail');
+    document.getElementById('adminQuickLinkBtn').style.display = 'none';
+    document.getElementById('hamburgerMenuNav').style.display = 'none';
+}
+
+// -------- AUTH --------
+document.getElementById('authChangeModeLink').addEventListener('click', () => {
+    isUiInLoginState = !isUiInLoginState;
+    document.getElementById('authDisplayTitle').innerText = isUiInLoginState ? "Terminal Login" : "Agent Enrollment";
+    document.getElementById('authSubmitBtn').innerText = isUiInLoginState ? "Authorize Node Access" : "Instantiate Core Node";
+    document.getElementById('authChangeModeLink').innerHTML = isUiInLoginState ? "New system operator? <span>Register Account Matrix</span>" : "Registered structural node? <span>Authorize Access</span>";
+});
+
+document.getElementById('identityForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value.trim();
+    const submitBtn = document.getElementById('authSubmitBtn');
+    submitBtn.disabled = true;
+
+    try {
+        const endpoint = isUiInLoginState ? '/api/auth/login' : '/api/auth/register';
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            setSession(data.uid, email, data.isAdmin || false);
+            // Check if banned
+            if (data.banned) {
+                document.getElementById('userBannedUidDisplay').innerText = `UID: ${data.uid}`;
+                displayTargetPanel('bannedPanel');
+            } else {
+                // Check subscription status
+                evaluateSubscriptionMatrix(data.uid);
+            }
+        } else {
+            alert(data.error || 'Authentication failed');
+        }
+    } catch (err) {
+        alert('Server error: ' + err.message);
+    } finally {
+        submitBtn.disabled = false;
+    }
+});
+
+// -------- SUBSCRIPTION & STATUS --------
+async function evaluateSubscriptionMatrix(uid) {
+    const localGatekeeper = localStorage.getItem(`node_session_cleared_${uid}`);
+    if (localGatekeeper === 'true') {
+        displayTargetPanel('dashboardPanel');
+        return;
+    }
+    try {
+        const res = await fetch('/api/user/status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid })
+        });
+        const data = await res.json();
+        if (data.active) {
+            localStorage.setItem(`node_session_cleared_${uid}`, 'true');
+            displayTargetPanel('dashboardPanel');
+        } else {
+            localStorage.removeItem(`node_session_cleared_${uid}`);
+            displayTargetPanel('subPanel');
+        }
+    } catch (e) {
+        if (localGatekeeper === 'true') {
+            displayTargetPanel('dashboardPanel');
+        } else {
+            displayTargetPanel('subPanel');
+        }
+    }
+}
+
+// Called when user clicks "I Have Paid"
+window.verifyManualPayment = function(tier) {
+    if (activeUid) {
+        // Simulate payment verification – just set plan active in server
+        fetch('/api/user/activate-key', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: activeUid, licenseKey: 'PAID-' + tier }) // dummy
+        }).then(() => {
+            localStorage.setItem(`node_session_cleared_${activeUid}`, 'true');
+            evaluateSubscriptionMatrix(activeUid);
+        }).catch(() => alert('Verification failed.'));
+    }
+};
+
+window.triggerDirectBilling = function(tier) {
+    alert('Redirect to payment would happen here. For demo, click "I Have Paid" below.');
+};
+
+// License key activation
+document.getElementById('submitLicenseKeyBtn').addEventListener('click', async () => {
+    const token = document.getElementById('licenseKeyInput').value.trim();
+    if (!token) return alert('Enter a token.');
+    try {
+        const res = await fetch('/api/user/activate-key', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: activeUid, licenseKey: token })
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert('License activated!');
+            localStorage.setItem(`node_session_cleared_${activeUid}`, 'true');
+            evaluateSubscriptionMatrix(activeUid);
+        } else {
+            alert(data.error || 'Invalid token');
+        }
+    } catch (e) { alert('Error activating token.'); }
+});
+
+// -------- LOGOUT --------
+window.killNodeSession = function() {
+    if (activeUid) {
+        localStorage.removeItem(`node_session_cleared_${activeUid}`);
+    }
+    clearSession();
+    displayTargetPanel('authPanel');
+};
+
+// -------- ADMIN FUNCTIONS --------
+window.adminGenerateTokenKey = async function() {
+    const plan = document.getElementById('adminPlanSelect').value;
+    const email = localStorage.getItem('firebaseUserEmail');
+    if (!email) return alert('Not logged in.');
+    try {
+        const res = await fetch('/api/admin/generate-key', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, planType: plan })
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('generatedKeyDisplayArea').style.display = 'block';
+            document.getElementById('adminGeneratedKeyBox').innerText = data.key;
+        } else {
+            alert(data.error || 'Failed');
+        }
+    } catch (e) { alert('Error generating key.'); }
+};
+
+window.adminAddNewAdminEmail = async function() {
+    const email = localStorage.getItem('firebaseUserEmail');
+    const newAdmin = document.getElementById('newAdminEmailInput').value.trim();
+    if (!newAdmin) return alert('Enter email.');
+    try {
+        const res = await fetch('/api/admin/add-admin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, newAdminEmail: newAdmin })
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert('Admin promoted!');
+            adminFetchUsersMatrix();
+        } else {
+            alert(data.error || 'Failed');
+        }
+    } catch (e) { alert('Error.'); }
+};
+
+window.adminExecuteBanAction = async function(action) {
+    const email = localStorage.getItem('firebaseUserEmail');
+    const targetUid = document.getElementById('adminTargetUidInput').value.trim();
+    if (!targetUid) return alert('Enter target UID.');
+    try {
+        const res = await fetch('/api/admin/ban-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, targetUid, action })
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert(`User ${action}ned successfully.`);
+            adminFetchUsersMatrix();
+        } else {
+            alert(data.error || 'Failed');
+        }
+    } catch (e) { alert('Error.'); }
+};
+
+async function adminFetchUsersMatrix() {
+    const email = localStorage.getItem('firebaseUserEmail');
+    if (!email) return;
+    try {
+        const res = await fetch('/api/admin/get-users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (data.users) {
+            window.globalUsersCacheList = data.users;
+            renderAdminUserBaseList(data.users);
+        }
+    } catch (e) {}
+}
+window.adminFetchUsersMatrix = adminFetchUsersMatrix;
+
+function renderAdminUserBaseList(arr) {
+    const container = document.getElementById('adminUsersContainer');
+    container.innerHTML = '';
+    if (arr.length === 0) {
+        container.innerHTML = '<div style="font-size:12px; color:#475569; text-align:center;">No matching records found.</div>';
+        return;
+    }
+    arr.forEach(u => {
+        const card = document.createElement('div');
+        card.className = 'admin-user-card';
+        card.innerHTML = `
+            <div class="admin-user-email">${u.email}</div>
+            <div class="admin-user-uid">UID: ${u.uid}</div>
+            <div class="admin-action-row">
+                ${u.banned ? 
+                `<button class="mini-btn" style="background:#10b981; color:#fff;" onclick="adminDirectStateChange('${u.uid}','unban')">Unban</button>` : 
+                `<button class="mini-btn" style="background:#ef4444; color:#fff;" onclick="adminDirectStateChange('${u.uid}','ban')">Ban</button>`}
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+window.renderAdminUserBaseList = renderAdminUserBaseList;
+
+window.filterAdminUserMatrixList = function() {
+    const term = document.getElementById('adminUserSearchBox').value.toLowerCase().trim();
+    const filtered = (window.globalUsersCacheList || []).filter(u => u.email.toLowerCase().includes(term) || u.uid.toLowerCase().includes(term));
+    renderAdminUserBaseList(filtered);
+};
+
+window.adminDirectStateChange = async function(targetUid, action) {
+    const email = localStorage.getItem('firebaseUserEmail');
+    try {
+        const res = await fetch('/api/admin/ban-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, targetUid, action })
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert('Done.');
+            adminFetchUsersMatrix();
+        }
+    } catch (e) { alert('Failed.'); }
+};
+
+// -------- DRAWER METRICS --------
+async function fetchMetricsData(uid) {
+    try {
+        const res = await fetch('/api/user/metrics', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid })
+        });
+        const data = await res.json();
+        document.getElementById('drawerTotalPairs').innerText = data.total || 0;
+        const listContainer = document.getElementById('drawerSessionList');
+        listContainer.innerHTML = '';
+        if (data.list && data.list.length) {
+            data.list.forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'metric-row';
+                row.innerHTML = `
+                    <span style="font-family:monospace; color:#e2e8f0;">+${item.number}</span>
+                    <span class="status-pill ${item.status === 'ACTIVE' ? 'active' : 'dead'}">${item.status}</span>
+                `;
+                listContainer.appendChild(row);
+            });
+        } else {
+            listContainer.innerHTML = '<div style="font-size:12px; color:#475569; font-style:italic;">No active/dead pairings detected.</div>';
+        }
+    } catch (e) {}
+}
+window.fetchMetricsData = fetchMetricsData;
+
+function toggleMenuDrawer(openState) {
+    const drawer = document.getElementById('menuDrawer');
+    if (openState) {
+        drawer.classList.add('open');
+        const uid = localStorage.getItem('cachedNodeUid');
+        if (uid) fetchMetricsData(uid);
+    } else {
+        drawer.classList.remove('open');
+    }
+}
+window.toggleMenuDrawer = toggleMenuDrawer;
+
+// -------- PAIRING TARGETS --------
+document.getElementById('addNodeBtn').addEventListener('click', () => {
+    const inp = document.getElementById('targetInput');
+    const raw = inp.value.trim().replace(/[^0-9]/g, '');
+    if (raw.length < 10) return alert('Invalid number.');
+    if (compiledTargets.includes(raw)) return alert('Already added.');
+    compiledTargets.push(raw);
+    renderTargets();
+    inp.value = '';
+});
+
+function renderTargets() {
+    const pool = document.getElementById('matrixPool');
+    pool.innerHTML = '';
+    compiledTargets.forEach((t, idx) => {
+        const chip = document.createElement('div');
+        chip.className = 'target-capsule';
+        chip.innerHTML = `<span>+${t}</span><span class="remove-node" data-idx="${idx}">&times;</span>`;
+        chip.querySelector('.remove-node').addEventListener('click', function() {
+            const i = parseInt(this.dataset.idx);
+            compiledTargets.splice(i, 1);
+            renderTargets();
+        });
+        pool.appendChild(chip);
+    });
+}
+
+// -------- FORM SUBMISSION (PAIRING) --------
+document.getElementById('terminalForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const actionBtn = document.getElementById('actionBtn');
+    const panelOutput = document.getElementById('panelOutput');
+    const statusTxt = document.getElementById('statusTxt');
+    const codeContainer = document.getElementById('codeContainer');
+
+    actionBtn.disabled = true;
+    actionBtn.innerText = "Processing Matrix Setup...";
+    panelOutput.style.display = "block";
+    codeContainer.style.display = "none";
+    codeContainer.innerText = "";
+    statusTxt.innerText = "Requesting verification packet...";
+
+    const uid = localStorage.getItem('cachedNodeUid') || '';
+    const number = document.getElementById('number').value.trim();
+    const isPremium = document.getElementById('isPremium').value;
+
+    if (!uid) {
+        alert('Session expired. Please login again.');
+        actionBtn.disabled = false;
+        actionBtn.innerText = "Request Connection Sync";
+        return;
+    }
+
+    const payload = { number, isPremium, targets: compiledTargets.join(','), uid };
+
+    try {
+        const response = await fetch('/api/pair', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (response.status === 403) {
+            alert('Security Rejection: Session invalid.');
+            window.location.reload();
+            return;
+        }
+        const resData = await response.json();
+        if (resData.code) {
+            statusTxt.innerText = "SECURE WHATSAPP PAIRING CODE KEY DEPLOYED:";
+            codeContainer.innerText = resData.code;
+            codeContainer.style.display = "inline-block";
+        } else {
+            statusTxt.innerText = resData.message || "Interrogating network cache...";
+            // Poll for code
+            let pollInterval = setInterval(async () => {
+                try {
+                    const pollRes = await fetch('/api/code');
+                    const pollData = await pollRes.json();
+                    if (pollData.code) {
+                        statusTxt.innerText = "SECURE WHATSAPP PAIRING CODE KEY DEPLOYED:";
+                        codeContainer.innerText = pollData.code;
+                        codeContainer.style.display = "inline-block";
+                        clearInterval(pollInterval);
+                    }
+                } catch (e) { /* ignore */ }
+            }, 2500);
+        }
+    } catch (err) {
+        statusTxt.innerText = "Runtime connection anomaly detected.";
+        console.error(err);
+    } finally {
+        actionBtn.disabled = false;
+        actionBtn.innerText = "Request Connection Sync";
+    }
+});
+
+// -------- AUDIO TOGGLE --------
+document.getElementById('audioToggleBtn').addEventListener('click', () => {
+    const video = document.querySelector('.video-canvas-bg video');
+    const icon = document.getElementById('audioIcon');
+    if (video.muted) {
+        video.muted = false;
+        icon.className = 'fas fa-volume-up';
+    } else {
+        video.muted = true;
+        icon.className = 'fas fa-volume-mute';
+    }
+});
+
+// -------- LICENSE FIELD TOGGLE --------
+document.getElementById('keyToggleAction').addEventListener('click', () => {
+    const container = document.getElementById('keyFieldContainer');
+    container.style.display = container.style.display === 'none' ? 'block' : 'none';
+});
+
+// -------- INITIAL LOAD --------
+(async function init() {
+    const uid = localStorage.getItem('cachedNodeUid');
+    const email = localStorage.getItem('firebaseUserEmail');
+    if (uid && email) {
+        activeUid = uid;
+        activeEmail = email;
+        document.getElementById('hamburgerMenuNav').style.display = 'flex';
+        // Check if user is admin
+        try {
+            const res = await fetch('/api/admin/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, uid })
+            });
+            const data = await res.json();
+            if (data.status === 'BANNED') {
+                document.getElementById('userBannedUidDisplay').innerText = `Signature token: ${uid}`;
+                displayTargetPanel('bannedPanel');
+                return;
+            } else if (data.status === 'ADMIN') {
+                document.getElementById('adminQuickLinkBtn').style.display = 'flex';
+                adminFetchUsersMatrix();
+            }
+        } catch (e) { /* ignore */ }
+        evaluateSubscriptionMatrix(uid);
+    } else {
+        displayTargetPanel('authPanel');
+    }
+})();
+</script>
+</body>
+</html>
